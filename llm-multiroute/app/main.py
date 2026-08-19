@@ -19,7 +19,10 @@ app = FastAPI(
         "email": "support@example.com",
     },
     servers=[
-        {"url": f"http://localhost:{settings.SERVER_PORT}", "description": "Local Development Server"}
+        {
+            "url": f"http://localhost:{settings.SERVER_PORT}",
+            "description": "Local Development Server",
+        }
     ],
 )
 

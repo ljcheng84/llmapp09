@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock
 
 import pytest
-
 from app.router.model_router import ModelRouter, TaskType
 from app.service.ai_service import AIService
 
@@ -48,7 +47,9 @@ class TestClassifyText:
         assert result.confidence == 0.95
 
     def test_uses_classify_model(self, ai_service, mock_http_client):
-        json_response = '{"labels": ["test"], "primaryCategory": "test", "confidence": 0.9}'
+        json_response = (
+            '{"labels": ["test"], "primaryCategory": "test", "confidence": 0.9}'
+        )
         _setup_chat_response(mock_http_client, json_response)
 
         ai_service.classify_text("test text")
@@ -83,7 +84,9 @@ class TestClassifyText:
             ai_service.classify_text("some text")
 
     def test_empty_labels(self, ai_service, mock_http_client):
-        json_response = '{"labels": [], "primaryCategory": "unknown", "confidence": 0.5}'
+        json_response = (
+            '{"labels": [], "primaryCategory": "unknown", "confidence": 0.5}'
+        )
         _setup_chat_response(mock_http_client, json_response)
 
         result = ai_service.classify_text("ambiguous text")
@@ -151,7 +154,9 @@ class TestSummarizeText:
         result = ai_service.summarize_text("Long article about AI in healthcare...")
 
         assert result is not None
-        assert result.summary == "AI transforms healthcare through improved diagnostics."
+        assert (
+            result.summary == "AI transforms healthcare through improved diagnostics."
+        )
         assert len(result.keyPoints) == 3
         assert result.wordCount == 6
 
@@ -166,7 +171,9 @@ class TestSummarizeText:
         assert body["model"] == "ministral-3:8b"
 
     def test_single_key_point(self, ai_service, mock_http_client):
-        json_response = '{"summary": "Brief summary.", "keyPoints": ["Main point"], "wordCount": 2}'
+        json_response = (
+            '{"summary": "Brief summary.", "keyPoints": ["Main point"], "wordCount": 2}'
+        )
         _setup_chat_response(mock_http_client, json_response)
 
         result = ai_service.summarize_text("Short text")
@@ -175,7 +182,9 @@ class TestSummarizeText:
         assert result.keyPoints[0] == "Main point"
 
     def test_empty_key_points(self, ai_service, mock_http_client):
-        json_response = '{"summary": "Too short to summarize.", "keyPoints": [], "wordCount": 4}'
+        json_response = (
+            '{"summary": "Too short to summarize.", "keyPoints": [], "wordCount": 4}'
+        )
         _setup_chat_response(mock_http_client, json_response)
 
         result = ai_service.summarize_text("Hi")
@@ -250,7 +259,9 @@ class TestDetectIntent:
 
 class TestAuthorizationHeader:
     def test_api_key_sends_bearer_header(self, mock_http_client):
-        json_response = '{"labels": ["test"], "primaryCategory": "test", "confidence": 0.9}'
+        json_response = (
+            '{"labels": ["test"], "primaryCategory": "test", "confidence": 0.9}'
+        )
         _setup_chat_response(mock_http_client, json_response)
 
         service = AIService(http_client=mock_http_client)
@@ -262,7 +273,9 @@ class TestAuthorizationHeader:
         assert headers["Authorization"] == "Bearer test-api-key"
 
     def test_no_api_key_sends_no_auth_header(self, mock_http_client):
-        json_response = '{"labels": ["test"], "primaryCategory": "test", "confidence": 0.9}'
+        json_response = (
+            '{"labels": ["test"], "primaryCategory": "test", "confidence": 0.9}'
+        )
         _setup_chat_response(mock_http_client, json_response)
 
         service = AIService(http_client=mock_http_client)
@@ -292,13 +305,17 @@ class TestModelRoutingIntegration:
             '{"primaryIntent": "i", "secondaryIntents": [], "intentCategory": "statement", "confidence": 0.5}',
         ]
 
-        for (task_fn, expected_model), response_text in zip(tasks_and_models, responses):
+        for (task_fn, expected_model), response_text in zip(
+            tasks_and_models, responses
+        ):
             _setup_chat_response(mock_http_client, response_text)
             task_fn()
 
             call_args = mock_http_client.post.call_args
             body = call_args.kwargs.get("json") or call_args[1].get("json")
-            assert body["model"] == expected_model, f"Expected model {expected_model}, got {body['model']}"
+            assert body["model"] == expected_model, (
+                f"Expected model {expected_model}, got {body['model']}"
+            )
 
 
 class TestJsonParsingEdgeCases:
@@ -327,7 +344,9 @@ class TestJsonParsingEdgeCases:
         assert result.overallSentiment == "neutral"
 
     def test_prompt_contains_expected_elements(self, ai_service, mock_http_client):
-        json_response = '{"labels": ["test"], "primaryCategory": "test", "confidence": 0.9}'
+        json_response = (
+            '{"labels": ["test"], "primaryCategory": "test", "confidence": 0.9}'
+        )
         _setup_chat_response(mock_http_client, json_response)
 
         ai_service.classify_text("Test input text")

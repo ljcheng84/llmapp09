@@ -1,13 +1,12 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
-from fastapi.testclient import TestClient
-
 from app.dto.classification_response import ClassificationResponse
 from app.dto.intent_response import IntentResponse
 from app.dto.sentiment_response import SentimentResponse
 from app.dto.summary_response import SummaryResponse
 from app.main import app
+from fastapi.testclient import TestClient
 
 
 @pytest.fixture
@@ -29,14 +28,19 @@ class TestClassifyEndpoint:
             confidence=0.95,
         )
 
-        response = client.post("/api/ai/classify", json={"text": "Artificial intelligence is transforming healthcare."})
+        response = client.post(
+            "/api/ai/classify",
+            json={"text": "Artificial intelligence is transforming healthcare."},
+        )
 
         assert response.status_code == 200
         data = response.json()
         assert data["labels"] == ["technology", "healthcare", "AI"]
         assert data["primaryCategory"] == "technology"
         assert data["confidence"] == 0.95
-        mock_ai_service.classify_text.assert_called_once_with("Artificial intelligence is transforming healthcare.")
+        mock_ai_service.classify_text.assert_called_once_with(
+            "Artificial intelligence is transforming healthcare."
+        )
 
     def test_empty_labels(self, client, mock_ai_service):
         mock_ai_service.classify_text.return_value = ClassificationResponse(
@@ -54,7 +58,9 @@ class TestClassifyEndpoint:
         assert data["confidence"] == 0.5
 
     def test_service_exception_returns_500(self, client, mock_ai_service):
-        mock_ai_service.classify_text.side_effect = RuntimeError("AI service unavailable")
+        mock_ai_service.classify_text.side_effect = RuntimeError(
+            "AI service unavailable"
+        )
 
         response = client.post("/api/ai/classify", json={"text": "Test text"})
 
@@ -70,7 +76,9 @@ class TestSentimentEndpoint:
             confidence=0.92,
         )
 
-        response = client.post("/api/ai/sentiment", json={"text": "I love this product! It's amazing!"})
+        response = client.post(
+            "/api/ai/sentiment", json={"text": "I love this product! It's amazing!"}
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -78,7 +86,9 @@ class TestSentimentEndpoint:
         assert data["sentimentScore"] == 0.85
         assert data["emotions"] == ["joy", "excitement"]
         assert data["confidence"] == 0.92
-        mock_ai_service.analyze_sentiment.assert_called_once_with("I love this product! It's amazing!")
+        mock_ai_service.analyze_sentiment.assert_called_once_with(
+            "I love this product! It's amazing!"
+        )
 
     def test_negative_sentiment(self, client, mock_ai_service):
         mock_ai_service.analyze_sentiment.return_value = SentimentResponse(
@@ -88,7 +98,10 @@ class TestSentimentEndpoint:
             confidence=0.88,
         )
 
-        response = client.post("/api/ai/sentiment", json={"text": "This is terrible. I'm very disappointed."})
+        response = client.post(
+            "/api/ai/sentiment",
+            json={"text": "This is terrible. I'm very disappointed."},
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -104,7 +117,9 @@ class TestSentimentEndpoint:
             confidence=0.95,
         )
 
-        response = client.post("/api/ai/sentiment", json={"text": "The meeting is scheduled for 3 PM."})
+        response = client.post(
+            "/api/ai/sentiment", json={"text": "The meeting is scheduled for 3 PM."}
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -113,7 +128,9 @@ class TestSentimentEndpoint:
         assert data["emotions"] == []
 
     def test_service_exception_returns_500(self, client, mock_ai_service):
-        mock_ai_service.analyze_sentiment.side_effect = RuntimeError("Failed to parse AI response")
+        mock_ai_service.analyze_sentiment.side_effect = RuntimeError(
+            "Failed to parse AI response"
+        )
 
         response = client.post("/api/ai/sentiment", json={"text": "Test text"})
 
@@ -178,7 +195,9 @@ class TestIntentEndpoint:
             confidence=0.88,
         )
 
-        response = client.post("/api/ai/intent", json={"text": "Where is the nearest restaurant?"})
+        response = client.post(
+            "/api/ai/intent", json={"text": "Where is the nearest restaurant?"}
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -186,7 +205,9 @@ class TestIntentEndpoint:
         assert data["secondaryIntents"] == ["location_search", "recommendation_request"]
         assert data["intentCategory"] == "question"
         assert data["confidence"] == 0.88
-        mock_ai_service.detect_intent.assert_called_once_with("Where is the nearest restaurant?")
+        mock_ai_service.detect_intent.assert_called_once_with(
+            "Where is the nearest restaurant?"
+        )
 
     def test_command_intent(self, client, mock_ai_service):
         mock_ai_service.detect_intent.return_value = IntentResponse(
@@ -212,7 +233,9 @@ class TestIntentEndpoint:
             confidence=0.90,
         )
 
-        response = client.post("/api/ai/intent", json={"text": "Please send me the report"})
+        response = client.post(
+            "/api/ai/intent", json={"text": "Please send me the report"}
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -227,7 +250,9 @@ class TestIntentEndpoint:
             confidence=0.85,
         )
 
-        response = client.post("/api/ai/intent", json={"text": "The weather is nice today."})
+        response = client.post(
+            "/api/ai/intent", json={"text": "The weather is nice today."}
+        )
 
         assert response.status_code == 200
         data = response.json()
