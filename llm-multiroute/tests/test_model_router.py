@@ -46,9 +46,7 @@ class TestModelRouter:
         router = ModelRouter()
         routes = router.get_routes()
         models = list(routes.values())
-        assert len(models) == len(set(models)), (
-            "Each task should route to a different model"
-        )
+        assert len(models) == len(set(models)), "Each task should route to a different model"
 
 
 class TestModelRouterCustomConfig:

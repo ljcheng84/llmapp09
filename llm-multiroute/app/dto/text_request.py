@@ -7,7 +7,5 @@ class TextRequest(BaseModel):
     text: str = Field(
         ...,
         description="Text to be analyzed",
-        json_schema_extra={
-            "example": "I love this product! The quality is outstanding."
-        },
+        json_schema_extra={"example": "I love this product! The quality is outstanding."},
     )

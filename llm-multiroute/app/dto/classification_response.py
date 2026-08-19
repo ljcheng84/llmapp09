@@ -16,6 +16,8 @@ class ClassificationResponse(BaseModel):
     )
     confidence: float = Field(
         ...,
+        ge=0.0,
+        le=1.0,
         description="Confidence score (0.0 to 1.0)",
         json_schema_extra={"example": 0.95},
     )

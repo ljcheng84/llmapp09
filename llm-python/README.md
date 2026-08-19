@@ -52,7 +52,7 @@
   # Running
   cd llm-python
   pip install -r requirements.txt
-  python -m uvicorn app.main:app --port 8080 --reload
+  python3 -m uvicorn app.main:app --port 8080 --reload
 
   Swagger UI is at http://localhost:8080/swagger-ui.html (same Ollama
   requirement: http://localhost:11434 with gemma:2b).

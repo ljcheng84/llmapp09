@@ -104,10 +104,45 @@
 │ cd llm-multiroute                                                        │
 │ pip install -r requirements.txt                                          │
 │ # Set env vars or create .env                                            │
-│ export OLLAMA_API_KEY=your_key       
-                                    │
+│ export OLLAMA_API_KEY=your_key                                           │
 │ python -m uvicorn app.main:app --port 8080 --reload                      │
-│ # Open http://localhost:8080/swagger-ui.html                             │
+│ # Open http://localhost:8082/swagger-ui.html                             │
 │ # Test: GET /api/ai/routes — should show 4 model assignments             │
 │ # Test: POST /api/ai/classify with {"text": "AI is transforming          │
 │ healthcare"}       
+
+---
+
+# Guardrails (guardrails-ai)
+
+`app/guardrails/` wraps the [guardrails-ai](https://github.com/guardrails-ai/guardrails)
+`Guard`/`Validator` framework and is wired into every request in two places:
+
+**Input guard** (`ai_controller._guarded_input`, runs before the LLM call):
+custom `Validator`s (`app/guardrails/validators.py`) detect prompt injection,
+harmful-content requests, secrets/API keys, and PII in `request.text`.
+Every detection is logged to `metrics/safety_metrics.json`
+(`GET /api/ai/metrics/safety`); secrets and PII are additionally redacted
+before the (possibly third-party) Ollama model ever sees them. Blocking
+(HTTP 400) instead of logging is opt-in per category via env vars — off by
+default so the documented "requests still get processed" behavior in
+`metrics_testing.md` is preserved:
+
+```
+GUARDRAILS_BLOCK_PROMPT_INJECTION=true
+GUARDRAILS_BLOCK_HARMFUL_CONTENT=true
+GUARDRAILS_BLOCK_SECRETS=true
+```
+
+**Output guard** (`ai_service`, replaces the old regex + `json.loads` parsing):
+`GuardrailsEngine.validate_output()` uses `Guard.for_pydantic(output_class=...)`
+per response DTO to validate the raw model response against its schema —
+required fields, types, numeric ranges (`confidence`/`sentimentScore`), and
+allowed enum values (`overallSentiment`, `intentCategory`) — with automatic
+markdown-fence stripping. A response that fails validation raises the same
+`RuntimeError("Failed to parse AI response as JSON: ...")` as before, so a
+malformed *or* now also a semantically-invalid response (e.g. `confidence: 5.0`,
+an invented sentiment category) is rejected instead of silently accepted.
+
+`GET /api/ai/guardrails` reports which guards are active and whether each
+blocks or just logs/redacts. See `tests/test_guardrails.py` for coverage.
